@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
+import { config } from 'dotenv'
+config()
 
 const supabase = createClient(
-  'https://exnrbjodaywxhvvzkhmg.supabase.co',
-  'REMOVED_KEY'
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
 )
 
 // --- Recruiter Profiles ---
