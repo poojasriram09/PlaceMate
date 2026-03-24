@@ -5,17 +5,11 @@ import { supabase } from '../lib/supabase'
 import { Briefcase, Mail, Lock, User, Building2, Shield, Globe, FileText, GraduationCap } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-const ROLES = [
-  { id: 'candidate', label: 'Student', icon: User, desc: 'Looking for jobs & internships' },
-  { id: 'recruiter', label: 'Recruiter', icon: Building2, desc: 'Hiring candidates' },
-  { id: 'tpo', label: 'TPO', icon: Shield, desc: 'Training & Placement Officer' },
-]
-
 export default function Register() {
   const { signUp, signInWithGoogle } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    fullName: '', email: '', password: '', role: 'candidate',
+    fullName: '', email: '', password: '', role: 'recruiter',
     candidateYear: '',
     companyName: '', companyWebsite: '', companyEmail: '', companyDescription: '',
   })
@@ -54,18 +48,18 @@ export default function Register() {
           <div className="w-14 h-14 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Briefcase className="w-7 h-7 text-accent" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
-          <p className="text-slate-500 mt-1">Join PlaceMate</p>
+          <h1 className="text-2xl font-bold text-slate-900">Recruiter Registration</h1>
+          <p className="text-slate-500 mt-1">Join PlaceMate as a Recruiter</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
           <button
             onClick={async () => {
-              localStorage.setItem('jobnexus_signup_role', form.role)
+              localStorage.setItem('jobnexus_signup_role', 'recruiter')
               try {
                 await signInWithGoogle()
                 toast.success('Account created!')
-                navigate(form.role === 'tpo' ? '/tpo' : '/profile')
+                navigate('/dashboard')
               } catch (err) {
                 if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') toast.error(err.message)
               }
@@ -81,24 +75,6 @@ export default function Register() {
             <div className="relative flex justify-center text-xs"><span className="bg-white px-3 text-slate-400">or register with email</span></div>
           </div>
 
-          {/* Role Selection */}
-          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-5">
-            {ROLES.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => setForm({ ...form, role: r.id })}
-                className={`p-3 rounded-lg border-2 text-center transition-all ${
-                  form.role === r.id ? 'border-accent bg-accent/10' : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <r.icon className={`w-5 h-5 mx-auto mb-1 ${form.role === r.id ? 'text-accent' : 'text-slate-400'}`} />
-                <p className="text-xs font-semibold">{r.label}</p>
-                <p className="text-xs text-slate-400 leading-tight mt-0.5">{r.desc}</p>
-              </button>
-            ))}
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
@@ -108,66 +84,32 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Candidate year selection */}
-            {form.role === 'candidate' && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Current Year of Study *</label>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[
-                    { value: 1, label: '1st Year' },
-                    { value: 2, label: '2nd Year' },
-                    { value: 3, label: '3rd Year' },
-                    { value: 4, label: '4th Year' },
-                  ].map(y => (
-                    <button key={y.value} type="button" onClick={() => setForm({ ...form, candidateYear: y.value })}
-                      className={`py-2 px-2 rounded-lg border-2 text-xs font-semibold transition-all ${
-                        form.candidateYear === y.value ? 'border-accent bg-accent/10 text-accent' : 'border-gray-200 text-slate-500 hover:border-gray-300'
-                      }`}>
-                      <GraduationCap className={`w-4 h-4 mx-auto mb-0.5 ${form.candidateYear === y.value ? 'text-accent' : 'text-slate-400'}`} />
-                      {y.label}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  {form.candidateYear && form.candidateYear <= 3
-                    ? 'You will see internship opportunities'
-                    : form.candidateYear === 4
-                    ? 'You will see internships and full-time jobs'
-                    : 'Select your current year'}
-                </p>
+            {/* Recruiter fields */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Company Name *</label>
+              <div className="relative">
+                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input type="text" required value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} className="input-field pl-10" placeholder="TechCorp India" />
               </div>
-            )}
-
-            {/* Recruiter-specific fields */}
-            {form.role === 'recruiter' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Company Name *</label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input type="text" required value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} className="input-field pl-10" placeholder="TechCorp India" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Company Website</label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input type="url" value={form.companyWebsite} onChange={(e) => setForm({ ...form, companyWebsite: e.target.value })} className="input-field pl-10" placeholder="https://company.com" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Company Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input type="email" value={form.companyEmail} onChange={(e) => setForm({ ...form, companyEmail: e.target.value })} className="input-field pl-10" placeholder="hr@company.com" />
-                  </div>
-                </div>
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
-                  <Shield className="w-4 h-4 inline mr-1" />
-                  Your recruiter account will be reviewed by the TPO before you can post jobs. This ensures a trusted hiring environment.
-                </div>
-              </>
-            )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Company Website</label>
+              <div className="relative">
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input type="url" value={form.companyWebsite} onChange={(e) => setForm({ ...form, companyWebsite: e.target.value })} className="input-field pl-10" placeholder="https://company.com" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Company Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input type="email" value={form.companyEmail} onChange={(e) => setForm({ ...form, companyEmail: e.target.value })} className="input-field pl-10" placeholder="hr@company.com" />
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+              <Shield className="w-4 h-4 inline mr-1" />
+              Your recruiter account will be reviewed by the TPO before you can post jobs. This ensures a trusted hiring environment.
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
